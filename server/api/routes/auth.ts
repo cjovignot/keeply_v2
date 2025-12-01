@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { Router, Request, Response } from "express";
 import axios from "axios";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
@@ -23,9 +23,7 @@ interface GoogleUserInfo {
 // ------------------------------------------------------
 // 1️⃣ Google OAuth URL
 // ------------------------------------------------------
-router.get("/google/url", (req, res) => {
-  // console.log("[GOOGLE URL] Creating OAuth URL");
-
+router.get("/google/url", (req: Request, res: Response) => {
   const rootUrl = "https://accounts.google.com/o/oauth2/v2/auth";
 
   const options = {
@@ -43,18 +41,13 @@ router.get("/google/url", (req, res) => {
   const qs = new URLSearchParams(options);
   const url = `${rootUrl}?${qs.toString()}`;
 
-  // console.log("[GOOGLE URL] ->", url);
-
   res.json({ url });
 });
 
 // ------------------------------------------------------
 // 2️⃣ Google Callback
 // ------------------------------------------------------
-router.get("/google/callback", async (req, res) => {
-  // console.log("\n===== GOOGLE CALLBACK =====");
-  // console.log("[CALLBACK] Query:", req.query);
-
+router.get("/google/callback", async (req: Request, res: Response) => {
   try {
     const { code } = req.query;
     if (!code) return res.status(400).json({ error: "Code is required" });
@@ -96,9 +89,9 @@ router.get("/google/callback", async (req, res) => {
       {
         _id: user._id,
         name: user.name,
-        provider: user.provider,
         email: user.email,
         role: user.role,
+        provider: "google",
       },
       process.env.JWT_SECRET!,
       { expiresIn: "7d" }
@@ -106,7 +99,7 @@ router.get("/google/callback", async (req, res) => {
 
     res.cookie("token", token, {
       httpOnly: true,
-      secure: false,
+      secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
@@ -121,7 +114,7 @@ router.get("/google/callback", async (req, res) => {
 // ------------------------------------------------------
 // 3️⃣ Signup (email/password)
 // ------------------------------------------------------
-router.post("/signup", async (req, res) => {
+router.post("/signup", async (req: Request, res: Response) => {
   try {
     const { name, email, password } = req.body;
     if (!name || !email || !password)
@@ -148,7 +141,7 @@ router.post("/signup", async (req, res) => {
 
     res.cookie("token", token, {
       httpOnly: true,
-      secure: false,
+      secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
@@ -163,7 +156,7 @@ router.post("/signup", async (req, res) => {
 // ------------------------------------------------------
 // 4️⃣ Login (email/password)
 // ------------------------------------------------------
-router.post("/login", async (req, res) => {
+router.post("/login", async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
 
@@ -188,7 +181,7 @@ router.post("/login", async (req, res) => {
 
     res.cookie("token", token, {
       httpOnly: true,
-      secure: false,
+      secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
@@ -203,7 +196,7 @@ router.post("/login", async (req, res) => {
 // ------------------------------------------------------
 // 5️⃣ Logout
 // ------------------------------------------------------
-router.post("/logout", (req, res) => {
+router.post("/logout", (req: Request, res: Response) => {
   res.clearCookie("token");
   res.json({ message: "Logged out" });
 });
@@ -211,8 +204,8 @@ router.post("/logout", (req, res) => {
 // ------------------------------------------------------
 // 6️⃣ /me
 // ------------------------------------------------------
-router.get("/me", (req, res) => {
-  const token = req.cookies.token;
+router.get("/me", (req: Request, res: Response) => {
+  const token = req.cookies?.token;
   if (!token) return res.json({ user: null });
 
   try {

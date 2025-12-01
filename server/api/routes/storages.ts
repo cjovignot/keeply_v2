@@ -43,7 +43,8 @@ router.get("/:id", async (req, res) => {
   try {
     const storage = await findStorageById(req.params.id);
     if (!storage) {
-      return res.status(404).json({ error: "Entrepôt introuvable." });
+      res.status(404).json({ error: "Entrepôt introuvable." });
+      return;
     }
 
     res.json(storage);
@@ -60,7 +61,8 @@ router.post("/", async (req, res) => {
   try {
     const { name, address, ownerId } = req.body;
     if (!name || !ownerId) {
-      return res.status(400).json({ error: "Nom et ownerId requis." });
+      res.status(400).json({ error: "Nom et ownerId requis." });
+      return;
     }
 
     const storage = await createStorage({ name, address, ownerId });
@@ -81,7 +83,8 @@ router.patch("/:id", async (req, res) => {
 
     const updatedStorage = await updateStorageById(id, updates);
     if (!updatedStorage) {
-      return res.status(404).json({ error: "Entrepôt introuvable." });
+      res.status(404).json({ error: "Entrepôt introuvable." });
+      return;
     }
 
     res.json({ message: "✅ Entrepôt mis à jour", storage: updatedStorage });
@@ -99,24 +102,23 @@ router.delete("/:id", async (req, res) => {
     const storageIdStr = req.params.id;
 
     if (!Types.ObjectId.isValid(storageIdStr)) {
-      return res.status(400).json({ error: "ID d'entrepôt invalide." });
+      res.status(400).json({ error: "ID d'entrepôt invalide." });
+      return;
     }
 
     const storageId = new Types.ObjectId(storageIdStr);
 
-    // 🗑️ Supprimer les boîtes associées
+    // 🗑️ Supprimer les boîtes associées (comportement destructif conservé -- Choix A)
     const deleteResult = await Box.deleteMany({ storageId });
-    // console.log(
-    //   `🗑️ ${deleteResult.deletedCount} boîtes supprimées pour storage ${storageIdStr}`
-    // );
 
     // 🏭 Supprimer l’entrepôt
     const deletedStorage = await deleteStorageById(storageIdStr);
     if (!deletedStorage) {
-      return res.status(404).json({ error: "Entrepôt introuvable." });
+      res.status(404).json({ error: "Entrepôt introuvable." });
+      return;
     }
 
-    return res.json({
+    res.json({
       message: `Entrepôt supprimé (${deleteResult.deletedCount} boîtes supprimées).`,
     });
   } catch (error) {
