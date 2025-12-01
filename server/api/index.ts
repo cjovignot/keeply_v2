@@ -1,29 +1,51 @@
-import express, { Request, Response } from "express";
+import express from "express";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
-dotenv.config();
+import mongoose from "mongoose";
 
-import helloRoute from "./routes/hello";
+dotenv.config();
 
 const app = express();
 
-app.use(cors());
 app.use(express.json());
+app.use(cookieParser()); // ✅ doit être avant tes routes
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL,
+    credentials: true, // ✅ obligatoire pour envoyer le cookie
+  })
+);
 
-// Route de test principale
-app.get("/api", (req: Request, res: Response) => {
-  res.send("Hello from the application API!");
+app.get("/", (req, res) => {
+  res.json({ message: "Backend running 🚀" });
 });
 
-// Route séparée
-app.use("/api/hello", helloRoute);
+// Routes
+import authRouter from "./routes/auth";
+import boxesRouter from "./routes/boxes";
+import storagesRouter from "./routes/storages";
+import userRouter from "./routes/user";
+app.use("/api/auth", authRouter);
+app.use("/api/boxes", boxesRouter);
+app.use("/api/storages", storagesRouter);
+app.use("/api/user", userRouter);
 
-// On démarre le serveur SEULEMENT en local
-if (process.env.VERCEL === undefined) {
-  const PORT = process.env.PORT || 3000;
-  app.listen(PORT, () => {
-    console.log(`🚀 Server running locally on port ${PORT}`);
+// MongoDB connection (local dev only)
+if (!process.env.VERCEL) {
+  mongoose
+    .connect(process.env.MONGODB_URI!)
+    .then(() => console.log("🟢 MongoDB connected"))
+    .catch((err) => console.error("🔴 MongoDB error:", err));
+}
+
+// Start local server
+if (!process.env.VERCEL) {
+  const port = process.env.PORT || 3000;
+  app.listen(port, () => {
+    console.log(`🚀 Server running at http://localhost:${port}`);
   });
 }
 
+// Needed for Vercel serverless functions
 export default app;
