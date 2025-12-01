@@ -39,7 +39,7 @@ export interface IBox {
 }
 
 const Dashboard = () => {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const { user } = useAuth();
 
   // =============================
