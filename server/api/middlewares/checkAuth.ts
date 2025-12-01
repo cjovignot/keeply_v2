@@ -1,7 +1,17 @@
+import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 
-export const checkAuth = (req, res, next) => {
-  const token = req.cookies.token;
+// Type pour étendre req.user
+declare global {
+  namespace Express {
+    interface Request {
+      user?: any;
+    }
+  }
+}
+
+export const checkAuth = (req: Request, res: Response, next: NextFunction) => {
+  const token = req.cookies?.token;
 
   if (!token) {
     req.user = null;
@@ -9,11 +19,11 @@ export const checkAuth = (req, res, next) => {
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET as string);
     req.user = decoded;
-    next();
-  } catch {
+    return next();
+  } catch (error) {
     req.user = null;
-    next();
+    return next();
   }
 };
