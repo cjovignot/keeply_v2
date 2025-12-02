@@ -1,9 +1,27 @@
 import express, { Request, Response } from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import "dotenv/config"; // ou
+
+import cookieParser from "cookie-parser";
+import { connectDB } from "./utils/connectDB";
+
 dotenv.config();
 
 const app = express();
+
+(async () => {
+  try {
+    await connectDB();
+    console.log("✅ DB connectée, lancement serveur...");
+    app.listen(3000, () => console.log("Server running on port 3000"));
+  } catch (err) {
+    console.error("❌ Impossible de connecter MongoDB :", err);
+  }
+})();
+
+// ⚡ Middleware pour parser les cookies
+app.use(cookieParser());
 
 app.use(cors());
 app.use(express.json());
