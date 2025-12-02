@@ -40,7 +40,7 @@ router.get("/google/url", (req, res) => {
     ].join(" "),
   };
 
-  const qs = new URLSearchParams(options);
+  const qs = new URLSearchParams(options as Record<string, string>);
   const url = `${rootUrl}?${qs.toString()}`;
 
   // console.log("[GOOGLE URL] ->", url);
