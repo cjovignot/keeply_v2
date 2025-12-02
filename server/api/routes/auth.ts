@@ -1,8 +1,11 @@
+// server/api/routes/auth.ts
+
 import { Router } from "express";
 import axios from "axios";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import { User } from "../models/user";
+import { safeUser } from "../utils/safeUser";
 import { GoogleTokenResponse } from "../types/index";
 
 const router = Router();
@@ -90,22 +93,20 @@ router.get("/google/callback", async (req, res) => {
       });
     }
 
-    // Ici TS n'est pas content sur user.password
-    const token = jwt.sign(
-      {
-        _id: user._id,
-        name: user.name,
-        provider: user.provider ?? "",
-        email: user.email,
-        role: user.role,
-      },
-      process.env.JWT_SECRET!,
-      { expiresIn: "7d" }
-    );
+    const token = jwt.sign(safeUser(user)!, process.env.JWT_SECRET!, {
+      expiresIn: "7d",
+    });
+
+    // res.cookie("token", token, {
+    //   httpOnly: true,
+    //   secure: false,
+    //   sameSite: "lax",
+    //   maxAge: 7 * 24 * 60 * 60 * 1000,
+    // });
 
     res.cookie("token", token, {
       httpOnly: true,
-      secure: false,
+      secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
