@@ -1,4 +1,4 @@
-// api/routes/user.ts
+// server/api/routes/user.ts
 import { Router, Response } from "express";
 import { checkAuth } from "../middlewares/checkAuth";
 import { checkAdmin } from "../middlewares/checkAdmin";
@@ -42,7 +42,7 @@ router.get("/:id", checkAuth, async (req: AuthRequest, res: Response) => {
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ error: "Utilisateur non trouvé" });
     res.json(user);
-  } catch (err) {
+  } catch {
     res.status(500).json({ error: "Erreur serveur" });
   }
 });

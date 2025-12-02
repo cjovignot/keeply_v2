@@ -1,15 +1,14 @@
-import { Request, Response, NextFunction } from "express";
+// server/api/middlewares/checkAdmin.ts
+import { Response, NextFunction } from "express";
+import { AuthRequest } from "../types";
 
-export const checkAdmin = (req: Request, res: Response, next: NextFunction) => {
-  const user = (req as any).user;
-
-  if (!user) {
-    return res.status(401).json({ message: "Non authentifié" });
+export const checkAdmin = (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  if (!req.user || req.user.role !== "admin") {
+    return res.status(403).json({ error: "Accès interdit." });
   }
-
-  if (user.role !== "admin") {
-    return res.status(403).json({ message: "Accès refusé" });
-  }
-
   next();
 };

@@ -1,10 +1,15 @@
-// GOOGLE AUTH
-export * from "./googleAuth";
+// server/api/types/index.ts
 
-// ENTITIES
+import type { Request } from "express"; // <— IMPORTANT
+import type { JwtUserPayload } from "./auth";
+
+// Re-exports
+export * from "./googleAuth";
 export * from "./entities/user";
 export * from "./entities/box";
 export * from "./entities/storage";
-
-// LINKS
 export * from "./links";
+
+export interface AuthRequest extends Request {
+  user?: JwtUserPayload | null;
+}
