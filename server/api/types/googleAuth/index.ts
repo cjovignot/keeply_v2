@@ -1,14 +1,4 @@
-import { Request } from "express";
-
-export interface AuthRequest extends Request {
-  user?: {
-    _id: string;
-    role: string;
-    email: string;
-    name?: string;
-  };
-}
-
+// server/api/types/googleAuth/index.ts
 export interface GoogleTokenResponse {
   access_token: string;
   expires_in: number;
