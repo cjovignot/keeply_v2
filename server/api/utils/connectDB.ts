@@ -1,3 +1,5 @@
+// server/api/utils/connectDB.ts
+
 import mongoose from "mongoose";
 
 const MONGODB_URI = process.env.MONGODB_URI;
@@ -15,7 +17,7 @@ export async function connectDB() {
   }
 
   try {
-    const db = await mongoose.connect(MONGODB_URI);
+    const db = await mongoose.connect(MONGODB_URI!);
     isConnected = db.connections[0].readyState === 1;
 
     console.log("🟢 MongoDB connecté depuis utils/db.ts");
