@@ -2,7 +2,7 @@ import { Router } from "express";
 import axios from "axios";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
-import { User, UserDocument } from "../models/user";
+import { User } from "../models/user";
 import { GoogleTokenResponse } from "../types/index";
 
 const router = Router();
@@ -80,9 +80,7 @@ router.get("/google/callback", async (req, res) => {
       { headers: { Authorization: `Bearer ${access_token}` } }
     );
 
-    let user = (await User.findOne({
-      email: userInfo.email,
-    })) as UserDocument | null;
+    let user = await User.findOne({ email: userInfo.email });
 
     if (!user) {
       user = await User.create({
@@ -92,11 +90,12 @@ router.get("/google/callback", async (req, res) => {
       });
     }
 
+    // Ici TS n'est pas content sur user.password
     const token = jwt.sign(
       {
         _id: user._id,
         name: user.name,
-        provider: user.provider,
+        provider: user.provider ?? "",
         email: user.email,
         role: user.role,
       },
