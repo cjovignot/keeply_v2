@@ -1,8 +1,18 @@
 // server/api/middlewares/checkAuth.ts
+import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 
-export const checkAuth = (req, res, next) => {
-  const token = req.cookies.token;
+// Étend Request pour inclure req.user
+export interface AuthRequest extends Request {
+  user?: any;
+}
+
+export const checkAuth = (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  const token = req.cookies?.token;
 
   if (!token) {
     req.user = null;
@@ -10,7 +20,7 @@ export const checkAuth = (req, res, next) => {
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!);
     req.user = decoded;
     next();
   } catch {
