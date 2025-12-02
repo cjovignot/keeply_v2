@@ -1,3 +1,4 @@
+// server/api/middlewares/checkAuth.ts
 import jwt from "jsonwebtoken";
 
 export const checkAuth = (req, res, next) => {
