@@ -21,7 +21,7 @@ export default function GoogleButton() {
         className="w-10 p-2 mr-3 bg-white rounded-full"
       />
       <span className="flex justify-center w-full text-sm font-medium text-white">
-        Sign in with Google
+        Se connecter avec Google
       </span>
     </button>
   );
