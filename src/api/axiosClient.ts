@@ -1,8 +1,10 @@
 import axios from "axios";
 
+const isProd = import.meta.env.PROD;
+
 const axiosClient = axios.create({
-  baseURL: "/", // IMPORTANT : utilise le proxy Vite
-  withCredentials: true, // envoie les cookies
+  baseURL: isProd ? "/" : "http://localhost:3000/",
+  withCredentials: true, // cookies
 });
 
 export default axiosClient;

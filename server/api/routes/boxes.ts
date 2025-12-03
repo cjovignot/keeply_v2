@@ -4,7 +4,6 @@ import { Types } from "mongoose";
 import QRCode from "qrcode";
 import cloudinary from "cloudinary";
 import { updateStorageById } from "../controllers/storageController";
-import { connectDB } from "../utils/connectDB";
 
 cloudinary.v2.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME!,
@@ -13,12 +12,6 @@ cloudinary.v2.config({
 });
 
 const router = express.Router();
-
-// ✅ S'assurer que la DB est connectée avant d'exécuter les handlers (comme dans storages.ts)
-router.use(async (_req, _res, next) => {
-  await connectDB();
-  next();
-});
 
 /**
  * 🟢 GET /api/boxes
@@ -65,16 +58,11 @@ router.get("/", async (req, res) => {
 router.get("/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    if (!Types.ObjectId.isValid(id)) {
-      res.status(400).json({ error: "ID invalide" });
-      return;
-    }
+    if (!Types.ObjectId.isValid(id))
+      return res.status(400).json({ error: "ID invalide" });
 
     const box = await Box.findById(id);
-    if (!box) {
-      res.status(404).json({ error: "Boîte introuvable" });
-      return;
-    }
+    if (!box) return res.status(404).json({ error: "Boîte introuvable" });
 
     res.json(box);
   } catch (err) {
@@ -94,8 +82,7 @@ router.post("/", async (req, res) => {
 
     // ownerId requis, storageId optionnel
     if (!ownerId) {
-      res.status(400).json({ error: "ownerId est requis" });
-      return;
+      return res.status(400).json({ error: "ownerId est requis" });
     }
 
     const ownerObjectId = Types.ObjectId.isValid(ownerId)
@@ -107,7 +94,7 @@ router.post("/", async (req, res) => {
         ? new Types.ObjectId(storageId)
         : null;
 
-    // Générer le numéro BOX-XXX (la logique reste la même -- choix 3A)
+    // Générer le numéro BOX-XXX
     const userBoxes = await Box.find({ ownerId: ownerObjectId }).sort({
       createdAt: 1,
     });
@@ -169,10 +156,8 @@ router.put("/:id", async (req, res) => {
     const updatedBox = await Box.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
     });
-    if (!updatedBox) {
-      res.status(404).json({ error: "Boîte introuvable" });
-      return;
-    }
+    if (!updatedBox)
+      return res.status(404).json({ error: "Boîte introuvable" });
     res.json(updatedBox);
   } catch (err) {
     console.error("Erreur mise à jour boîte :", err);
@@ -187,19 +172,12 @@ router.put("/:id", async (req, res) => {
 router.delete("/:id", async (req, res) => {
   try {
     const box = await Box.findById(req.params.id);
-    if (!box) {
-      res.status(404).json({ error: "Boîte introuvable" });
-      return;
-    }
+    if (!box) return res.status(404).json({ error: "Boîte introuvable" });
 
     await Box.findByIdAndDelete(req.params.id);
-
-    // ⚠️ Protéger si storageId est null/undefined
-    if (box.storageId) {
-      await updateStorageById(box.storageId.toString(), {
-        $pull: { boxes: box._id },
-      });
-    }
+    await updateStorageById(box.storageId.toString(), {
+      $pull: { boxes: box._id },
+    });
 
     res.json({ message: "Boîte supprimée et retirée de l’entrepôt" });
   } catch (err) {

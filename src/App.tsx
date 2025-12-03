@@ -1,8 +1,6 @@
-// import React from "react";
 import { Routes, Route } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 
-// import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import MobileLayout from "./layouts/MobileLayout";

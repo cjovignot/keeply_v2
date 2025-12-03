@@ -1,12 +1,14 @@
+// server/api/models/user.ts
+
 import { Schema, model, Document } from "mongoose";
 
 export interface User {
   name: string;
   email: string;
-  password?: string;
+  password?: string | null;
   role: "user" | "admin";
-  picture?: string;
-  provider?: string;
+  picture?: string | null;
+  provider?: string | null;
   printSettings?: Record<string, any>;
 }
 

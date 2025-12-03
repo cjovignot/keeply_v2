@@ -1,4 +1,4 @@
-// api/routes/user.ts
+// server/api/routes/user.ts
 import { Router, Response } from "express";
 import { checkAuth } from "../middlewares/checkAuth";
 import { checkAdmin } from "../middlewares/checkAdmin";
@@ -16,7 +16,7 @@ import { AuthRequest } from "../types";
 const router = Router();
 
 // ------------------------
-// GET -- Tous les utilisateurs (admin seulement)
+// GET — Tous les utilisateurs (admin seulement)
 // ------------------------
 router.get(
   "/",
@@ -35,24 +35,20 @@ router.get(
 );
 
 // ------------------------
-// GET -- Un utilisateur par son ID
+// GET — Un utilisateur par son ID
 // ------------------------
 router.get("/:id", checkAuth, async (req: AuthRequest, res: Response) => {
   try {
     const user = await User.findById(req.params.id);
-    if (!user) {
-      res.status(404).json({ error: "Utilisateur non trouvé" });
-      return;
-    }
-    // ⚠️ Ne renvoie que les champs sûrs
-    res.json(safeUser(user));
-  } catch (err) {
+    if (!user) return res.status(404).json({ error: "Utilisateur non trouvé" });
+    res.json(user);
+  } catch {
     res.status(500).json({ error: "Erreur serveur" });
   }
 });
 
 // ------------------------
-// POST -- Création d’un utilisateur (admin)
+// POST — Création d’un utilisateur (admin)
 // ------------------------
 router.post(
   "/",
@@ -62,8 +58,7 @@ router.post(
     try {
       const { name, email, password, role } = req.body;
       if (!name || !email || !password) {
-        res.status(400).json({ error: "Champs requis manquants." });
-        return;
+        return res.status(400).json({ error: "Champs requis manquants." });
       }
 
       const user = await createUser({
@@ -85,7 +80,7 @@ router.post(
 );
 
 // ------------------------
-// PATCH -- Mise à jour d’un utilisateur
+// PATCH — Mise à jour d’un utilisateur
 // ------------------------
 router.patch("/:id", checkAuth, async (req: AuthRequest, res: Response) => {
   try {
@@ -113,17 +108,13 @@ router.patch("/:id", checkAuth, async (req: AuthRequest, res: Response) => {
 
     const userToUpdate = await findUserById(id);
     if (!userToUpdate) {
-      res.status(404).json({ error: "Utilisateur introuvable." });
-      return;
+      return res.status(404).json({ error: "Utilisateur introuvable." });
     }
 
     // Vérification des droits : admin ou owner
-    if (req.user?.role !== "admin" && req.user?._id?.toString() !== id) {
-      res.status(403).json({ error: "Accès refusé." });
-      return;
+    if (req.user?.role !== "admin" && req.user?._id !== id) {
+      return res.status(403).json({ error: "Accès refusé." });
     }
-
-    // On laisse le hash au controller (Choix 2B) -- updateUserById doit gérer le hash si password présent
     const updatedUser = await updateUserById(id, allowedUpdates);
 
     res.json({
@@ -137,7 +128,7 @@ router.patch("/:id", checkAuth, async (req: AuthRequest, res: Response) => {
 });
 
 // ------------------------
-// DELETE -- Suppression d’un utilisateur
+// DELETE — Suppression d’un utilisateur
 // ------------------------
 router.delete("/:id", checkAuth, async (req: AuthRequest, res: Response) => {
   try {
@@ -145,14 +136,12 @@ router.delete("/:id", checkAuth, async (req: AuthRequest, res: Response) => {
     const userToDelete = await findUserById(id);
 
     if (!userToDelete) {
-      res.status(404).json({ error: "Utilisateur introuvable." });
-      return;
+      return res.status(404).json({ error: "Utilisateur introuvable." });
     }
 
     // Vérification des droits : admin ou owner
-    if (req.user?.role !== "admin" && req.user?._id?.toString() !== id) {
-      res.status(403).json({ error: "Accès refusé." });
-      return;
+    if (req.user?.role !== "admin" && req.user?._id !== id) {
+      return res.status(403).json({ error: "Accès refusé." });
     }
 
     await deleteUserById(id);
