@@ -1,12 +1,11 @@
 // server/api/routes/auth.ts
-
 import { Router } from "express";
 import axios from "axios";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
-import { User } from "../models/user";
 import { safeUser } from "../utils/safeUser";
 import { GoogleTokenResponse } from "../types/index";
+import { createUser, findUserByEmail } from "../controllers/userController";
 
 const router = Router();
 
@@ -27,8 +26,6 @@ interface GoogleUserInfo {
 // 1️⃣ Google OAuth URL
 // ------------------------------------------------------
 router.get("/google/url", (req, res) => {
-  // console.log("[GOOGLE URL] Creating OAuth URL");
-
   const rootUrl = "https://accounts.google.com/o/oauth2/v2/auth";
 
   const options = {
@@ -46,8 +43,6 @@ router.get("/google/url", (req, res) => {
   const qs = new URLSearchParams(options as Record<string, string>);
   const url = `${rootUrl}?${qs.toString()}`;
 
-  // console.log("[GOOGLE URL] ->", url);
-
   res.json({ url });
 });
 
@@ -55,9 +50,6 @@ router.get("/google/url", (req, res) => {
 // 2️⃣ Google Callback
 // ------------------------------------------------------
 router.get("/google/callback", async (req, res) => {
-  // console.log("\n===== GOOGLE CALLBACK =====");
-  // console.log("[CALLBACK] Query:", req.query);
-
   try {
     const { code } = req.query;
     if (!code) return res.status(400).json({ error: "Code is required" });
@@ -83,13 +75,14 @@ router.get("/google/callback", async (req, res) => {
       { headers: { Authorization: `Bearer ${access_token}` } }
     );
 
-    let user = await User.findOne({ email: userInfo.email });
+    let user = await findUserByEmail(userInfo.email);
 
     if (!user) {
-      user = await User.create({
+      user = await createUser({
         name: userInfo.name,
         email: userInfo.email,
-        role: "user",
+        password: "-", // mot de passe dummy pour Google
+        provider: "google",
       });
     }
 
@@ -97,19 +90,13 @@ router.get("/google/callback", async (req, res) => {
       expiresIn: "7d",
     });
 
+    const isProd = process.env.NODE_ENV === "production";
     res.cookie("token", token, {
       httpOnly: true,
-      secure: false,
-      sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
+      secure: isProd,
+      sameSite: isProd ? "none" : "lax",
+      path: "/",
     });
-
-    // res.cookie("token", token, {
-    //   httpOnly: true,
-    //   secure: process.env.NODE_ENV === "production",
-    //   sameSite: "lax",
-    //   maxAge: 7 * 24 * 60 * 60 * 1000,
-    // });
 
     res.redirect(`${process.env.FRONTEND_URL}/auth/success`);
   } catch (err) {
@@ -127,30 +114,22 @@ router.post("/signup", async (req, res) => {
     if (!name || !email || !password)
       return res.status(400).json({ message: "Tous les champs sont requis" });
 
-    const existingUser = await User.findOne({ email });
+    const existingUser = await findUserByEmail(email);
     if (existingUser)
       return res.status(400).json({ message: "Utilisateur déjà existant" });
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const user = await createUser({ name, email, password });
 
-    const user = await User.create({
-      name,
-      email,
-      password: hashedPassword,
-      role: "user",
+    const token = jwt.sign(safeUser(user)!, process.env.JWT_SECRET!, {
+      expiresIn: "7d",
     });
 
-    const token = jwt.sign(
-      { _id: user._id, email: user.email, name: user.name, role: user.role },
-      process.env.JWT_SECRET!,
-      { expiresIn: "7d" }
-    );
-
+    const isProd = process.env.NODE_ENV === "production";
     res.cookie("token", token, {
       httpOnly: true,
-      secure: false,
-      sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
+      secure: isProd,
+      sameSite: isProd ? "none" : "lax",
+      path: "/",
     });
 
     res.json(user);
@@ -166,8 +145,8 @@ router.post("/signup", async (req, res) => {
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
+    const user = await findUserByEmail(email);
 
-    const user = await User.findOne({ email });
     if (!user)
       return res.status(400).json({ message: "Utilisateur non trouvé" });
 
@@ -180,17 +159,16 @@ router.post("/login", async (req, res) => {
     if (!isMatch)
       return res.status(400).json({ message: "Mot de passe incorrect" });
 
-    const token = jwt.sign(
-      { _id: user._id, email: user.email, name: user.name, role: user.role },
-      process.env.JWT_SECRET!,
-      { expiresIn: "7d" }
-    );
+    const token = jwt.sign(safeUser(user)!, process.env.JWT_SECRET!, {
+      expiresIn: "7d",
+    });
 
+    const isProd = process.env.NODE_ENV === "production";
     res.cookie("token", token, {
       httpOnly: true,
-      secure: false,
-      sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
+      secure: isProd,
+      sameSite: isProd ? "none" : "lax",
+      path: "/",
     });
 
     res.json(user);
@@ -211,7 +189,7 @@ router.post("/logout", (req, res) => {
 // ------------------------------------------------------
 // 6️⃣ /me
 // ------------------------------------------------------
-router.get("/me", (req, res) => {
+router.get("/me", async (req, res) => {
   const token = req.cookies.token;
   if (!token) return res.json({ user: null });
 
