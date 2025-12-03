@@ -1,4 +1,3 @@
 import serverless from "serverless-http";
-import app from "./server/api/index";
-
+import app from "./server/api/index.js"; // ✅ extension .js obligatoire en ES Modules
 export const handler = serverless(app);
