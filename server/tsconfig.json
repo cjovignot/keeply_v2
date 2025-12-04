@@ -8,9 +8,12 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    "outDir": "dist",
+    "allowSyntheticDefaultImports": true,
+
     "rootDir": "./",
-    "allowSyntheticDefaultImports": true
+    "outDir": "dist",
+
+    "typeRoots": ["./types", "./node_modules/@types"]
   },
   "include": [
     "api/**/*",
