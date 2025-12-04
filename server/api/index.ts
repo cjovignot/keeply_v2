@@ -6,11 +6,11 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-import authRouter from "./routes/auth";
-import helloRoute from "./routes/hello";
-import boxesRouter from "./routes/boxes";
-import storagesRouter from "./routes/storages";
-import userRouter from "./routes/user";
+import authRouter from "./routes/auth.js";
+import helloRoute from "./routes/hello.js";
+import boxesRouter from "./routes/boxes.js";
+import storagesRouter from "./routes/storages.js";
+import userRouter from "./routes/user.js";
 
 const app = express();
 
@@ -35,11 +35,11 @@ app.use("/api/user", userRouter);
 app.get("/api", (req, res) => res.send("Hello from API!"));
 
 // ⚡ Écoute locale seulement
-if (process.env.VERCEL === undefined) {
-  const PORT = process.env.PORT || 3000;
-  app.listen(PORT, () =>
-    console.log(`🚀 Server running locally on port ${PORT}`)
-  );
-}
+// if (process.env.VERCEL === undefined) {
+//   const PORT = process.env.PORT || 3000;
+//   app.listen(PORT, () =>
+//     console.log(`🚀 Server running locally on port ${PORT}`)
+//   );
+// }
 
 export default app;

@@ -11,5 +11,5 @@
     "outDir": "dist",
     "rootDir": "."
   },
-  "include": ["api/**/*", "vercel-server.ts"]
+  "include": ["api/**/*", "vercel-server.ts", "../server-local.ts"]
 }
