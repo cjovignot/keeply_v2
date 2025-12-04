@@ -12,5 +12,10 @@
     "rootDir": "./",
     "allowSyntheticDefaultImports": true
   },
-  "include": ["server/api/**/*", "server/types/**/*", "server/vercel-server.ts"]
+  "include": [
+    "api/**/*",
+    "types/**/*",
+    "vercel-server.ts"
+  ],
+  "exclude": ["dist"]
 }
