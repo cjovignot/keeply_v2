@@ -5,11 +5,11 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-import authRouter from "./routes/auth.ts";
-import helloRoute from "./routes/hello.ts";
-import boxesRouter from "./routes/boxes.ts";
-import storagesRouter from "./routes/storages.ts";
-import userRouter from "./routes/user.ts";
+import authRouter from "./routes/auth.js";
+import helloRoute from "./routes/hello.js";
+import boxesRouter from "./routes/boxes.js";
+import storagesRouter from "./routes/storages.js";
+import userRouter from "./routes/user.js";
 
 const app = express();
 
