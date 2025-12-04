@@ -12,5 +12,5 @@
     "rootDir": ".",
     "typeRoots": ["./types", "./node_modules/@types"] 
   },
-  "include": ["api/**/*", "types/**/*", "vercel-server.ts", "../server-local.ts"]
+  "include": ["api/**/*", "types/**/*", "../vercel-server.ts", "../server-local.ts"]
 }
