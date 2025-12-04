@@ -12,7 +12,13 @@
     }
   ],
   "routes": [
-    { "src": "server/api/(.*)", "dest": "/vercel-server.ts" },
-    { "src": "/(.*)", "dest": "/index.html" }
+    {
+      "src": "/api/(.*)",
+      "dest": "/vercel-server.ts"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
   ]
 }

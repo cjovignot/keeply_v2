@@ -1,4 +1,3 @@
-// server/api/index.ts
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
@@ -14,22 +13,19 @@ import userRouter from "./routes/user.js";
 
 const app = express();
 
-// ⚡ Middleware
+// Middlewares
 app.use(
   cors({
-    origin: ["http://localhost:5173", "https://keeeply.vercel.app"],
-    credentials: true, // important pour cookies
+    origin: [
+      "http://localhost:5173",
+      "https://keeeply.vercel.app"
+    ],
+    credentials: true
   })
 );
-app.use(cookieParser());
+
 app.use(express.json());
-app.use(cookieParser()); // ✅ doit être avant tes routes
-app.use(
-  cors({
-    origin: process.env.FRONTEND_URL,
-    credentials: true, // ✅ obligatoire pour envoyer le cookie
-  })
-);
+app.use(cookieParser());
 
 // Routes
 app.use("/api/hello", helloRoute);
@@ -38,15 +34,9 @@ app.use("/api/boxes", boxesRouter);
 app.use("/api/storages", storagesRouter);
 app.use("/api/user", userRouter);
 
-// Route test
-app.get("/api", (req, res) => res.send("Hello from API!"));
+// Test
+app.get("/api", (req, res) => {
+  res.send("Hello from API!");
+});
 
-// ⚡ Écoute locale seulement
-// if (process.env.VERCEL === undefined) {
-//   const PORT = process.env.PORT || 3000;
-//   app.listen(PORT, () =>
-//     console.log(`🚀 Server running locally on port ${PORT}`)
-//   );
-// }
-
-// Needed for Vercel serverless functi
+export default app;
