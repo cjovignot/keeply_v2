@@ -3,21 +3,14 @@
     "target": "ES2020",
     "module": "ESNext",
     "moduleResolution": "Bundler",
-    
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    
     "outDir": "dist",
     "rootDir": "./",
-    
     "allowSyntheticDefaultImports": true
   },
-  "include": [
-    "api/**/*",
-    "types/**/*",
-    "vercel-server.ts"
-  ]
+  "include": ["api/**/*", "types/**/*", "vercel-server.ts"]
 }
